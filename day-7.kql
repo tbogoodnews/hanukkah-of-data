@@ -1,0 +1,16 @@
+let items = noah_products
+| where ["desc"] has "("
+| extend product = tostring(split(["desc"], " (")[0]), type = tostring(split(["desc"], " (")[-1])
+| extend type = replace_string(type, ")", "")
+| where type in ("amber", "azure", "blue", "green", "magenta", "mauve", "orange", "puce", "purple", "red", "white", "yellow")
+| project sku, product, colour=type;
+noah_orders
+| order by ordered
+| where ordered == shipped // Pick up
+| extend GF = customerid == 4167
+| extend check = GF or prev( GF)
+| where check
+| join kind=inner (noah_order_items
+| join kind = inner items on sku) on orderid
+| where not( GF)
+| join kind=inner noah_customers on customerid

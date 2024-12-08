@@ -1,0 +1,14 @@
+let MatchingBirthdays = noah_customers
+| where dayofyear(birthdate) between (173 .. 204) // cancer
+| where getyear( birthdate) % 12 == 7 // rabbit
+| where citystatezip has "NY"; // New york
+let filtered_products = noah_products 
+| where ["desc"] == "Rug Cleaner"; // also cleans rug
+let filtered_order_items = noah_order_items 
+| join kind = inner filtered_products on sku
+| distinct orderid;
+noah_orders
+| join kind=inner MatchingBirthdays on customerid
+//| where ordered == shipped // picked up
+| where ordered >  datetime(2017, 04, 06) // after original pickup
+| where orderid in (filtered_order_items)

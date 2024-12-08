@@ -1,0 +1,15 @@
+let filtered_customers = noah_customers
+| where citystatezip contains "Staten Island"
+| project name, customerid, phone;
+let filtered_products = noah_products
+| where ["desc"] contains_cs "Cat" and  ["desc"] contains_cs "Senior"
+| project sku; // also cleans rug
+let filtered_order_items = noah_order_items 
+| where sku in (filtered_products)
+| extend  Total = qty * unit_price
+| summarize Total = sum(Total) by orderid;
+noah_orders
+| join kind = inner (filtered_customers) on customerid
+| join kind = inner filtered_order_items on orderid
+| summarize Total = sum(Total) by name, customerid, phone
+| order by Total

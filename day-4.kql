@@ -1,0 +1,11 @@
+let filtered_order_items = noah_order_items 
+| where sku contains_cs "BKY"
+| distinct orderid;
+noah_orders
+| where ordered > datetime(2017-07-21) // last guy
+| where  shipped == ordered  // pick up
+| where hourofday( ordered) < 5
+| where orderid in (filtered_order_items)
+| join kind=inner noah_customers on customerid
+| summarize Count=count() by name, phone
+| order by Count

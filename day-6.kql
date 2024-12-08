@@ -1,0 +1,9 @@
+noah_products
+| join kind=inner noah_order_items on sku
+//| where wholesale_cost >= unit_price
+| extend Total = qty * unit_price
+| extend discount = iff(wholesale_cost >= unit_price, qty * (wholesale_cost - unit_price), toreal(0)), wholesale_cost = wholesale_cost * qty
+| join kind=inner noah_orders on orderid
+| join kind=inner noah_customers on customerid
+| summarize total_wholesale = sum(wholesale_cost), total_paid = sum(Total), total_discount = sum(discount) by customerid, name, phone
+| order by total_discount desc 

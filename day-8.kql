@@ -1,0 +1,11 @@
+noah_products
+| where ["desc"] has "Noah"
+| extend product = tostring(split(["desc"], " (")[0]), type = tostring(split(["desc"], " (")[-1])
+| extend type = replace_string(type, ")", "")
+| extend isColour = type in ("amber", "azure", "blue", "green", "magenta", "mauve", "orange", "puce", "purple", "red", "white", "yellow")
+| join kind = inner noah_order_items on sku
+| join kind = inner noah_orders on orderid
+| summarize collectibles = count_distinct(sku), non_color_collectibles = count_distinctif(sku, not(isColour)),color_collectibles = count_distinctif(product, isColour) by customerid
+| where collectibles >= (84 / 12) + 101 - 84
+| join kind = inner (noah_customers | project name, customerid, phone) on customerid
+| order by collectibles

@@ -1,0 +1,17 @@
+let filtered_customers = noah_customers
+| extend first_initial = substring(name, 0, 1)
+| extend last_initial = substring(split(name, " ")[-1], 0, 1)
+| where first_initial == "J"
+| where last_initial == "P"
+| project customerid, name, phone;
+let filtered_products = noah_products 
+| where ["desc"] contains "rug";
+let filtered_order_items = noah_order_items 
+| join kind = inner filtered_products on sku
+| distinct orderid;
+noah_orders
+| where startofyear( ordered) == datetime(2017, 1 , 1)
+| join kind=inner (filtered_customers) on customerid
+| where orderid in (filtered_order_items)
+| distinct name, phone
+
